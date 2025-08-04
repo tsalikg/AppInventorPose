@@ -48,7 +48,7 @@
 
       let topResult = prediction.reduce((a, b) => a.probability > b.probability ? a : b);
       document.getElementById("label").innerText = `Pose: ${topResult.className} (${(topResult.probability * 100).toFixed(1)}%)`;
-window.AppInventor.setWebViewString(topResult.className);
+      window.AppInventor.setWebViewString(topResult.className);
       model.drawPose(webcam.canvas, pose);
       ctx.drawImage(webcam.canvas, 0, 0);
     }
@@ -57,5 +57,6 @@ window.AppInventor.setWebViewString(topResult.className);
   </script>
 </body>
 </html>
+
 
 
