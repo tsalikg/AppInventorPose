@@ -1,0 +1,59 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <title>Pose Model</title>
+  <script src="https://cdn.jsdelivr.net/npm/@tensorflow/tfjs"></script>
+  <script src="https://cdn.jsdelivr.net/npm/@teachablemachine/pose"></script>
+  <style>
+    body { margin: 0; }
+    video, canvas { width: 100%; height: auto; }
+  </style>
+</head>
+<body>
+  <video id="webcam" autoplay playsinline></video>
+  <canvas id="canvas"></canvas>
+  <div id="label"></div>
+
+  <script type="text/javascript">
+    const URL = "https://teachablemachine.withgoogle.com/models/OHeXOwauM/";
+
+    let model, webcam, ctx, labelContainer;
+
+    async function init() {
+      const modelURL = URL + "model.json";
+      const metadataURL = URL + "metadata.json";
+
+      model = await tmPose.load(modelURL, metadataURL);
+      webcam = new tmPose.Webcam(400, 400, true);
+      await webcam.setup();
+      await webcam.play();
+
+      window.requestAnimationFrame(loop);
+
+      const canvas = document.getElementById("canvas");
+      canvas.width = 400;
+      canvas.height = 400;
+      ctx = canvas.getContext("2d");
+    }
+
+    async function loop() {
+      webcam.update();
+      await predict();
+      window.requestAnimationFrame(loop);
+    }
+
+    async function predict() {
+      const { pose, posenetOutput } = await model.estimatePose(webcam.canvas);
+      const prediction = await model.predict(posenetOutput);
+
+      let topResult = prediction.reduce((a, b) => a.probability > b.probability ? a : b);
+      document.getElementById("label").innerText = `Pose: ${topResult.className} (${(topResult.probability * 100).toFixed(1)}%)`;
+
+      model.drawPose(webcam.canvas, pose);
+      ctx.drawImage(webcam.canvas, 0, 0);
+    }
+
+    init();
+  </script>
+</body>
+</html>
